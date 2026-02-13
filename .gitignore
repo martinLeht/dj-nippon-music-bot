@@ -1,6 +1,6 @@
 # Project specific
-./lavalink/plugins/
-./src/main/resources/application-local.properties
+lavalink/plugins/
+src/main/resources/application-local.properties
 
 # Defaults
 .gradle
