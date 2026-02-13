@@ -1,17 +1,24 @@
 package gg.nippon.squad.config
 
 import org.slf4j.LoggerFactory
+import java.io.File
 import java.net.URI
 import java.util.Properties
 
-private const val APP_CONFIG = "application.properties"
+private const val DEFAULT_APP_CONFIG = "application.properties"
 
 object ApplicationPropertiesLoader {
     private val logger = LoggerFactory.getLogger(ApplicationPropertiesLoader::class.java)
     private val properties = Properties()
 
     init {
-        val file = this::class.java.classLoader.getResourceAsStream(APP_CONFIG)
+        val profile = System.getProperty("profile") ?: ""
+        when (profile != "") {
+            true -> logger.info("Running with $profile profile")
+            false -> logger.info("Running without specific profile")
+        }
+        val propertiesFile = appendProfileToApplicationProperties(profile)
+        val file = this::class.java.classLoader.getResourceAsStream(propertiesFile)
         properties.load(file)
     }
 
@@ -37,4 +44,14 @@ object ApplicationPropertiesLoader {
             password = getProperty(LavalinkClientConfiguration.PASSWORD_CONFIG_PATH),
             uri = getPropertyAsURI(LavalinkClientConfiguration.URI_CONFIG_PATH),
         )
+
+    private fun appendProfileToApplicationProperties(profile: String): String {
+        val dotIndex = DEFAULT_APP_CONFIG.lastIndexOf(".")
+        if (dotIndex == -1) return DEFAULT_APP_CONFIG
+
+        val namePart = DEFAULT_APP_CONFIG.substring(0, dotIndex)
+        val extension = DEFAULT_APP_CONFIG.substring(dotIndex)
+
+        return "$namePart-$profile$extension"
+    }
 }

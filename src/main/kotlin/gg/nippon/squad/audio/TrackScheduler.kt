@@ -12,25 +12,25 @@ class TrackScheduler(private val guildAudioManager: GuildAudioManager) {
     val queue: Queue<Track?> = LinkedList<Track?>()
 
     fun enqueue(track: Track?) {
-        this.guildAudioManager.player
+        guildAudioManager.player
             ?.let { player ->
                 if (player.track == null) {
-                    this.startTrack(track)
+                    startTrack(track)
                 } else {
-                    this.queue.offer(track)
+                    queue.offer(track)
                 }
-            } ?: this.startTrack(track)
+            } ?: startTrack(track)
     }
 
     fun enqueuePlaylist(tracks: List<Track?>) {
-        this.queue.addAll(tracks)
+        queue.addAll(tracks)
 
-        this.guildAudioManager.player
+        guildAudioManager.player
             ?.let{ player ->
                 if (player.track == null) {
-                    this.startTrack(this.queue.poll())
+                    startTrack(queue.poll())
                 }
-            } ?: this.startTrack(this.queue.poll())
+            } ?: startTrack(queue.poll())
     }
 
     fun onTrackStart(track: Track) {
@@ -44,14 +44,16 @@ class TrackScheduler(private val guildAudioManager: GuildAudioManager) {
     }
 
     fun startNextTrack() {
-        val nextTrack: Track? = this.queue.poll()
+        val nextTrack: Track? = queue.poll()
 
         if (nextTrack != null) {
-            this.startTrack(nextTrack)
+            startTrack(nextTrack)
+        } else {
+            guildAudioManager.player?.stopTrack()
         }
     }
 
     private fun startTrack(track: Track?) {
-        this.guildAudioManager.link?.createOrUpdatePlayer()?.setTrack(track)?.setVolume(35)?.subscribe()
+        guildAudioManager.link?.createOrUpdatePlayer()?.setTrack(track)?.setVolume(35)?.subscribe()
     }
 }
